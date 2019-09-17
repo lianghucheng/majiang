@@ -1,0 +1,10 @@
+{
+	"LogLevel": "debug",
+	"LogPath": "",
+	"TCPAddr": ":3550",
+	"WSAddr": ":3660",
+	"HTTPAddr": ":8085",
+	"MaxConnNum": 20000,
+	"DBUrl": "mongodb://localhost",
+	"DBMaxConnNum": 100
+}

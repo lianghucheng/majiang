@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script type="text/javascript">
+        var ws = null
+        window.onunload = function () {
+            if (ws) ws.close(1000);
+        }
+        // 发送 Hello 消息
+        sendJSONObject = function (obj) {
+            if (ws && ws.readyState == WebSocket.OPEN) {
+                ws.send(JSON.stringify(obj))
+            }
+            return Object.keys(obj)
+        }
+
+        connectLocal = function () {
+            let wsaddr = "ws://" + document.getElementById("local_wsaddr").value
+            initWebSocket(wsaddr)
+        }
+
+        connectLocal2 = function () {
+            let wsaddr = "ws://" + document.getElementById("local_wsaddr2").value
+            initWebSocket(wsaddr)
+        }
+
+        connectRemote = function () {
+            let wsaddr = "ws://" + document.getElementById("remote_wsaddr").value
+            initWebSocket(wsaddr)
+        }
+
+        connectRemote2 = function () {
+            let wsaddr = "ws://" + document.getElementById("remote_wsaddr2").value
+            initWebSocket(wsaddr)
+        }
+
+        initWebSocket = function (wsaddr) {
+            if (ws != null) {
+                return
+            }
+            ws = new WebSocket(wsaddr)
+            ws.onopen = function () {
+                document.getElementById("connect").style.display = "none"
+                document.getElementById("login").style.display = ""
+            }
+
+            ws.onmessage = function (e) {
+                var reader = new FileReader();
+                reader.readAsText(e.data)
+                reader.onload = function () {
+                    // console.log(this.result)
+                    var result = JSON.parse(this.result)
+                    if (result.S2C_Login) {
+                        console.log("S2C_Login: ", result.S2C_Login)
+                    } else if (result.S2C_Heartbeat) {
+                        sendJSONObject({C2S_Heartbeat: {}})
+                    } else if (result.S2C_ActionMahjongDiscard) {
+                        console.log("S2C_ActionMahjongDiscard: ", result.S2C_ActionMahjongDiscard)
+                    } else if (result.S2C_TotalResults) {
+                        console.log("S2C_TotalResults: ", result.S2C_TotalResults)
+                    } else if (result.S2C_RoundResults) {
+                        console.log("S2C_RoundResults: ", result.S2C_RoundResults)
+                    } else if (result.S2C_SetUserRole) {
+                        console.log("S2C_SetUserRole: ", result.S2C_SetUserRole)
+                    } else if (result.S2C_CompleteDailyShare) {
+                        console.log("S2C_CompleteDailyShare: ", result.S2C_CompleteDailyShare)
+                    } else if (result.S2C_AllTransferRoomCardRecord) {
+                        console.log("S2C_AllTransferRoomCardRecord: ", result.S2C_AllTransferRoomCardRecord)
+                    } else if (result.S2C_AllAgentInfo) {
+                        console.log("S2C_AllAgentInfo: ", result.S2C_AllAgentInfo)
+                    } else if (result.S2C_AllUserInfo) {
+                        console.log("S2C_AllUserInfo: ", result.S2C_AllUserInfo)
+                    } else if (result.S2C_UserInfo) {
+                        console.log("S2C_UserInfo: ", result.S2C_UserInfo)
+                    } else if (result.S2C_BlackList) {
+                        console.log("S2C_BlackList: ", result.S2C_BlackList)
+                    } else if (result.S2C_Close) {
+                        console.log("S2C_Close: ", result.S2C_Close)
+                    } else {
+                        console.log(result)
+                    }
+                }
+            }
+
+            ws.onerror = function () {
+                alert("连接 " + wsaddr + " 失败！")
+            }
+
+            ws.onclose = function () {
+                ws = null
+                document.getElementById("connect").style.display = ""
+                document.getElementById("login").style.display = "none"
+            }
+        }
+
+        wechatLogin = function () {
+            let unionid = document.getElementById("unionid").value
+            var obj = {
+                C2S_WeChatLogin: {
+//                    Nickname: "我是谁",
+//                    Headimgurl: "http://wx.qlogo.cn/mmopen/Po9mkm3Z42tolYpxUVpY6mvCmqalibOpcJ2jG3Qza5qgtibO1NLFNUF7icwCibxPicbGmkoiciaqKEIdvvveIBfEQqal8vkiavHIeqFT/0",
+//                    Sex: 1,
+                    Unionid: unionid
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        usernamePasswordLogin = function () {
+            let username = document.getElementById("username").value
+            let password = document.getElementById("password").value
+            var obj = {
+                C2S_UsernamePasswordLogin: {
+                    Username: username,
+                    Password: password,
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        setUsernamePassword = function () {
+            let username = document.getElementById("username").value
+            let password = document.getElementById("password").value
+            var obj = {
+                C2S_SetUsernamePassword: {
+                    Username: username,
+                    Password: password,
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        setRole = function (role) {
+            let accountid = document.getElementById("accountid").value
+            var obj = {
+                C2S_SetUserRole: {
+                    AccountID: parseInt(accountid),
+                    Role: role,
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        transferRoomCard = function () {
+            let accountid = document.getElementById("accountid").value
+            let roomCard = document.getElementById("roomcard").value
+            var obj = {
+                C2S_TransferRoomCard: {
+                    AccountID: parseInt(accountid),
+                    RoomCards: parseInt(roomCard),
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        discard = function () {
+            let tile = document.getElementById("tile").value
+            var obj = {
+                C2S_MahjongDiscard: {
+                    Tile: parseInt(tile),
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        setGDAndroidVersion = function () {
+            let v = document.getElementById("androidversion").value
+            var obj = {
+                C2S_SetGDConfig: {
+                    AndroidVersion: parseInt(v),
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        setGDIOSVersion = function () {
+            let v = document.getElementById("iosversion").value
+            var obj = {
+                C2S_SetGDConfig: {
+                    IOSVersion: parseInt(v),
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        setGDWeChatNumber = function () {
+            let v = document.getElementById("wechatnumber").value
+            var obj = {
+                C2S_SetGDConfig: {
+                    WeChatNumber: v,
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        setGDNotice = function () {
+            let v = document.getElementById("notice").value
+            var obj = {
+                C2S_SetGDConfig: {
+                    Notice: v,
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        setGDRadio = function () {
+            let v = document.getElementById("radio").value
+            var obj = {
+                C2S_SetGDConfig: {
+                    Radio: v,
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        startMatching = function () {
+            var obj = {
+                C2S_StartGDMatching: {}
+            }
+            sendJSONObject(obj)
+        }
+
+        setSystemOn = function (on) {
+            var obj = {
+                C2S_SetSystemOn: {
+                    On: on,
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        getTotalResult = function () {
+            var obj = {
+                C2S_GetTotalResults: {}
+            }
+            sendJSONObject(obj)
+        }
+
+        getRoundResult = function () {
+            let id = document.getElementById("totalreultid").value
+            var obj = {
+                C2S_GetRoundResults: {
+                    TotalResultID: parseInt(id),
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        dailyShare = function () {
+            var obj = {
+                C2S_CompleteDailyShare: {}
+            }
+            sendJSONObject(obj)
+        }
+
+        getTransferRoomCardRecord = function () {
+            let accountid = document.getElementById("accountid").value
+            var obj = {
+                C2S_GetTransferRoomCardRecord: {
+                    AccountID: parseInt(accountid),
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        getAllTransferRoomCardRecord = function () {
+            var obj = {
+                C2S_GetAllTransferRoomCardRecord: {
+                    PageNumber: 1,
+                    PageSize: 10,
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        getAllAgentInfo = function () {
+            var obj = {
+                C2S_GetAllAgentInfo: {
+                    PageNumber: 1,
+                    PageSize: 10,
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        getAllUserInfo = function () {
+            var obj = {
+                C2S_GetAllUserInfo: {
+                    PageNumber: 1,
+                    PageSize: 10,
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        getAllUserInfoByNickname = function () {
+            var obj = {
+                C2S_GetAllUserInfo: {
+                    Nickname: "我",
+                    PageNumber: 1,
+                    PageSize: 10,
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        getUserInfo = function () {
+            let accountid = document.getElementById("accountid").value
+            var obj = {
+                C2S_GetUserInfo: {
+                    AccountID: parseInt(accountid)
+                }
+            }
+            sendJSONObject(obj)
+        }
+
+        getBlackList = function () {
+            var obj = {
+                C2S_GetBlackList: {
+                    PageNumber: 1,
+                    PageSize: 10,
+                }
+            }
+            sendJSONObject(obj)
+        }
+        setRobotData = function () {
+            let id = document.getElementById("robotCards").value
+            var obj = {
+                C2S_SetRobotData: {
+                    RoomCards : parseInt(id)
+                }
+            }
+            sendJSONObject(obj)
+        }
+    </script>
+</head>
+<body>
+<div id="connect">
+    ws://<input id="local_wsaddr" type="text" value="192.168.1.168:3653">
+    <button onclick="connectLocal()">连接本地测试</button>
+    <br>
+    ws://<input id="local_wsaddr2" type="text" value="192.168.1.240:3660">
+    <button onclick="connectLocal2()">连接本地测试</button>
+    <br>
+    ws://<input id="remote_wsaddr" type="text" value="139.199.180.94:3660">
+    <button onclick="connectRemote()">连接远程测试</button>
+    <br>
+    ws://<input id="remote_wsaddr2" value="gdmj.shenzhouxing.com:3660">
+    <button onclick="connectRemote2()">连接远程正式</button>
+</div>
+<div id="login" style="display: none">
+    Union ID：<input id="unionid" value="o8c-nt6tO8aIBNPoxvXOQTVJUxY0">
+    <br>
+    <button onclick="wechatLogin()">微信登录</button>
+    <br>
+    账号：<input id="username" type="text" value="银滩麻将">
+    密码：<input id="password" type="text" value="123456">
+    <br>
+    <button onclick="usernamePasswordLogin()">账密登录</button>
+    <button onclick="setUsernamePassword()">设置账密</button>
+    <br>
+    Account ID：<input id="accountid" value="3970412">
+    <br>
+    <button onclick="setRole(3)">设置为管理员</button>
+    <button onclick="setRole(2)">设置为代理</button>
+    <button onclick="setRole(1)">设置为玩家</button>
+    <button onclick="setRole(-1)">拉黑</button>
+    <br>
+    房卡：<input id="roomcard" value="1">
+    <button onclick="transferRoomCard()">转卡</button>
+    <br>
+    出牌：<input id="tile" value="0">
+    <button onclick="discard()">出牌</button>
+    <br>
+    安卓新版本：<input id="androidversion" value="1">
+    <button onclick="setGDAndroidVersion()">设置</button>
+    <br>
+    iOS 新版本：<input id="iosversion" value="1">
+    <button onclick="setGDIOSVersion()">设置</button>
+    <br>
+    客服微信号：<input id="wechatnumber" value="zhongyusw01">
+    <button onclick="setGDWeChatNumber()">设置</button>
+    <br>
+    公告：<input id="notice" value="诚招代理，咨询详情请加微信：zhongyusw01">
+    <button onclick="setGDNotice()">设置</button>
+    <br>
+    广播：<input id="radio" value="请各位玩家文明游戏，未成年人勿过度沉迷">
+    <button onclick="setGDRadio()">设置</button>
+    <br>
+    <button onclick="startMatching()">练习场</button>
+    <br>
+    系统开关：
+    <button onclick="setSystemOn(true)">开</button>
+    <button onclick="setSystemOn(false)">关</button>
+    <br>
+    <button onclick="getTotalResult()">总成绩</button>
+    <br>
+    总成绩 ID：<input id="totalreultid" value="1">
+    <button onclick="getRoundResult()">单局成绩</button>
+    <br>
+    <button onclick="dailyShare()">每日分享</button>
+    <br>
+    <button onclick="getTransferRoomCardRecord()">通过玩家ID获取玩家转卡记录</button>
+    <br>
+    <button onclick="getAllTransferRoomCardRecord()">获取所有用户的转卡记录</button>
+    <br>
+    <button onclick="getAllAgentInfo()">所有代理</button>
+    <br>
+    <button onclick="getAllUserInfo()">所有玩家</button>
+    <br>
+    <button onclick="getAllUserInfoByNickname()">通过昵称获取所有玩家的信息</button>
+    <br>
+    <button onclick="getUserInfo()">获取单个玩家/代理/黑名单</button>
+    <br>
+    <button onclick="getBlackList()">黑名单</button>
+    <br>
+    增加机器人房卡: <input id="robotCards" value="1">
+    <button onclick="setRobotData()">增加机器人房卡</button>
+    <br>
+    <button onclick="ws.close(1000)">登出</button>
+</div>
+</body>
+</html>
